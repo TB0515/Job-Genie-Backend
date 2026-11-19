@@ -33,7 +33,7 @@ The API layer for Job Genie. Handles authentication, company wishlist management
 ### Setup
 
 ```bash
-git clone https://github.com/fac-32/Job-Genie-Backend.git
+git clone https://github.com/TB0515/Job-Genie-Backend.git
 cd Job-Genie-Backend
 npm install
 cp .env.example .env

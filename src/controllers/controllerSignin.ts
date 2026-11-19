@@ -4,6 +4,7 @@ import { addUser } from '../services/addUser.js';
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
+import { cookieOptions } from '../config/cookies.js';
 
 dotenv.config();
 
@@ -46,12 +47,7 @@ export const googleAuth = async (
 			return;
 		}
 
-		res.cookie('sb_token', data.session.access_token, {
-			httpOnly: true,
-			secure: isProd,
-			sameSite: isProd ? 'none' : 'lax',
-			path: '/',
-		});
+		res.cookie('sb_token', data.session.access_token, cookieOptions);
 
 		const { data: userRow, error: userError } = await supabaseAdmin
 			.from('Users')
@@ -162,12 +158,7 @@ export const logIn = async (req: Request, res: Response): Promise<void> => {
 		const { email, password } = req.body;
 		const { session, user } = await authenticateUser(email, password);
 
-		res.cookie('sb_token', session.access_token, {
-			httpOnly: true,
-			secure: isProd,
-			sameSite: isProd ? 'none' : 'lax',
-			path: '/',
-		});
+		res.cookie('sb_token', session.access_token, cookieOptions);
 
 		const { data: userRow, error: userError } = await supabaseAdmin
 			.from('Users')
@@ -226,7 +217,7 @@ export const logOut = async (req: Request, res: Response): Promise<void> => {
 		}
 	}
 
-	res.clearCookie('sb_token', { path: '/' });
+	res.clearCookie('sb_token', cookieOptions);
 	res.json({ success: true, message: 'Logged out successfully' });
 };
 

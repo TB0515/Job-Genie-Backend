@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../config/supabase.js';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
+import { cookieOptions } from '../config/cookies.js';
 
+const isProd = process.env.NODE_ENV === 'production';
 export const requireAuth = async (
 	req: Request,
 	res: Response,
@@ -17,7 +19,7 @@ export const requireAuth = async (
 	const { data, error } = await supabase.auth.getUser(sbToken);
 
 	if (error || !data.user) {
-		res.clearCookie('sb_token', { path: '/' });
+		res.clearCookie('sb_token', cookieOptions);
 		res.status(401).json({ success: false, error: 'Invalid or expired token' });
 		return;
 	}
