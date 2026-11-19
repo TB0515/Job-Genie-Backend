@@ -47,6 +47,35 @@ vi.mock('../src/config/supabase.js', () => ({
 	},
 }));
 
+vi.mock('../src/config/supabaseAdmin.js', () => ({
+	supabaseAdmin: {
+		auth: {
+			signUp: vi.fn(),
+			signInWithPassword: vi.fn(),
+			signInWithIdToken: vi.fn(),
+		},
+		from: vi.fn((table: string) => {
+			if (table === 'Users') {
+				return {
+					select: () => ({
+						eq: () => ({
+							single: () => ({ data: { id: 1 }, error: null }),
+						}),
+					}),
+				};
+			}
+			if (table === 'Wishlist') {
+				return {
+					select: () => ({
+						in: () => ({ data: [], error: null }),
+					}),
+				};
+			}
+			return {};
+		}),
+	},
+}));
+
 // Mock getOrgsByUser to return empty array (no wishlist in DB)
 vi.mock('../src/services/getOrgsByUser.js', () => ({
 	getOrgsByUser: vi.fn().mockResolvedValue([]),

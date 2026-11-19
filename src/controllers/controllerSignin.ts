@@ -53,7 +53,7 @@ export const googleAuth = async (
 			path: '/',
 		});
 
-		const { data: userRow, error: userError } = await supabase
+		const { data: userRow, error: userError } = await supabaseAdmin
 			.from('Users')
 			.select('email, username, first_name, last_name, phone')
 			.eq('auth_user_id', data.user.id)
@@ -169,7 +169,7 @@ export const logIn = async (req: Request, res: Response): Promise<void> => {
 			path: '/',
 		});
 
-		const { data: userRow, error: userError } = await supabase
+		const { data: userRow, error: userError } = await supabaseAdmin
 			.from('Users')
 			.select('email, username, first_name, last_name, phone')
 			.eq('auth_user_id', user.id)

@@ -1,5 +1,5 @@
-import { supabase } from '../config/supabase.js';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 type addUserObject = {
 	auth_user_id: string;
@@ -15,7 +15,7 @@ type addUserObject = {
 
 export async function addUser(
 	newUser: addUserObject,
-	client: SupabaseClient = supabase
+	client: SupabaseClient = supabaseAdmin
 ) {
 	const { data, error } = await client
 		.from('Users')

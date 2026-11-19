@@ -69,6 +69,64 @@ vi.mock('../src/config/supabase.js', () => {
 	return { supabase: { from } };
 });
 
+vi.mock('../src/config/supabaseAdmin.js', () => {
+	const single = vi.fn();
+	const selectChain = { eq: vi.fn(), in: vi.fn(), single };
+	const insertChain = { select: vi.fn() };
+	const deleteChain = { eq: vi.fn(), in: vi.fn() };
+
+	const from = vi.fn((table: string) => {
+		if (table === 'Users') {
+			return {
+				select: () => ({
+					eq: () => ({ single: () => ({ data: { id: 1 }, error: null }) }),
+				}),
+			};
+		}
+		if (table === 'User-Wishlist') {
+			return {
+				select: () => ({ eq: () => ({ data: [], error: null }) }),
+				insert: () => ({ select: () => ({ data: [], error: null }) }),
+				delete: () => ({ eq: () => ({ in: () => ({ error: null }) }) }),
+			};
+		}
+		if (table === 'Wishlist') {
+			return {
+				select: () => ({
+					in: () => ({ data: [], error: null }),
+					eq: () => ({
+						single: () => ({ data: null, error: { message: 'not found' } }),
+					}),
+				}),
+				insert: () => ({
+					select: () => ({
+						data: [
+							{
+								id: 99,
+								name: 'Test Co',
+								city: 'London',
+								country: 'UK',
+								industry: 'Tech',
+								description: 'A test company',
+								size: '1-50',
+								img_url: null,
+							},
+						],
+						error: null,
+					}),
+				}),
+			};
+		}
+		return {
+			select: selectChain,
+			insert: () => insertChain,
+			delete: () => deleteChain,
+		};
+	});
+
+	return { supabaseAdmin: { from } };
+});
+
 // Mock DB service modules that also use supabase
 vi.mock('../src/services/addOrgWishlist.js', () => ({
 	addOrg: vi.fn().mockResolvedValue([

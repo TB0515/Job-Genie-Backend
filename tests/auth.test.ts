@@ -41,6 +41,26 @@ vi.mock('../src/config/supabase.js', () => ({
 	},
 }));
 
+vi.mock('../src/config/supabaseAdmin.js', () => ({
+	supabaseAdmin: {
+		from: vi.fn((table: string) => {
+			if (table === 'Users') {
+				return {
+					select: () => ({
+						eq: () => ({
+							single: () => ({ data: null, error: { message: 'not found' } }),
+						}),
+					}),
+					upsert: () => ({
+						select: () => ({ data: [{ id: 1 }], error: null }),
+					}),
+				};
+			}
+			return {};
+		}),
+	},
+}));
+
 // Mock google-auth-library so verifyIdToken throws by default (invalid token scenario).
 // Must use a class or regular function — arrow functions can't be used as constructors.
 vi.mock('google-auth-library', () => {
@@ -155,9 +175,9 @@ describe('Auth API', () => {
 		});
 	});
 
-	describe('POST /auth/me', () => {
+	describe('GET /auth/me', () => {
 		it('returns 200 and echoes injected user when authenticated', async () => {
-			const res = await request(app).post('/auth/me').expect(200);
+			const res = await request(app).get('/auth/me').expect(200);
 
 			expect(res.body.success).toBe(true);
 			expect(res.body.id).toBe('test-uuid');

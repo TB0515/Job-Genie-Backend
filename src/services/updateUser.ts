@@ -1,5 +1,5 @@
-import { supabase } from '../config/supabase.js';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 type updateUserObject = {
 	email?: string;
@@ -14,7 +14,7 @@ type updateUserObject = {
 export async function updateUser(
 	username: string,
 	updateProperties: updateUserObject,
-	client: SupabaseClient = supabase
+	client: SupabaseClient = supabaseAdmin
 ) {
 	const { data, error } = await client
 		.from('Users')

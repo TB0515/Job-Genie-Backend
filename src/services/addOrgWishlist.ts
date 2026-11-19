@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 export async function addOrg(
 	name: string,
@@ -7,9 +7,10 @@ export async function addOrg(
 	industry: string,
 	description: string,
 	size: string,
-	img_url?: string
+	img_url?: string,
+	website_url?: string
 ) {
-	const { data, error } = await supabase
+	const { data, error } = await supabaseAdmin
 		.from('Wishlist')
 		.insert({
 			name: name,
@@ -19,12 +20,13 @@ export async function addOrg(
 			description: description,
 			size: size,
 			img_url: img_url,
+			website_url: website_url,
 		})
 		.select();
 
 	if (error) {
 		if (error.code === '23505') {
-			const { data: existing, error: findError } = await supabase
+			const { data: existing, error: findError } = await supabaseAdmin
 				.from('Wishlist')
 				.select()
 				.eq('name', name)

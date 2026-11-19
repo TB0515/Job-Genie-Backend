@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import { generateWishlist } from '../services/wishlistGenerator.service.js';
-import { supabase } from '../config/supabase.js';
 import { addOrg } from '../services/addOrgWishlist.js';
 import { addRelationshipUserOrg } from '../services/addRelationshipUserOrg.js';
 import { deleteRelationshipUserOrg } from '../services/deleteRelationshipUserOrg.js';
 import { getOrgsByUser } from '../services/getOrgsByUser.js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 // Look up the numeric PK for a user by their Supabase auth UUID
 async function getUserNumericId(authUuid: string): Promise<number> {
-	const { data, error } = await supabase
+	const { data, error } = await supabaseAdmin
 		.from('Users')
 		.select('id')
 		.eq('auth_user_id', authUuid)
@@ -36,7 +36,7 @@ export const getAllWishlist = async (req: Request, res: Response) => {
 
 		const orgIds = relationships.map((r) => r.wishlist_fk);
 
-		const { data: companies, error } = await supabase
+		const { data: companies, error } = await supabaseAdmin
 			.from('Wishlist')
 			.select('*')
 			.in('id', orgIds);
@@ -128,7 +128,7 @@ export const deleteFromWishlist = async (req: Request, res: Response) => {
 		const authUuid = (req as any).user.id;
 		const numericId = await getUserNumericId(authUuid);
 
-		const { data: orgData, error: orgError } = await supabase
+		const { data: orgData, error: orgError } = await supabaseAdmin
 			.from('Wishlist')
 			.select('id')
 			.eq('name', name)
@@ -256,13 +256,18 @@ export const generateWishlistFromFilters = async (
 						company.industry,
 						company.description,
 						company.size,
-						company.logoUrl
+						company.logoUrl,
+						company.websiteUrl
 					);
 					const orgId = orgData[0].id as number;
 					await addRelationshipUserOrg(numericId, [orgId], ['wishlisted']);
-					return orgData[0];
-				} catch {
-					// Skip duplicates — org with same name/city already exists
+					return {
+						...orgData[0],
+						logoUrl: company.logoUrl,
+						websiteUrl: company.websiteUrl,
+					};
+				} catch (err) {
+					console.error(`Failed to save ${company.name}:`, err);
 					return null;
 				}
 			})

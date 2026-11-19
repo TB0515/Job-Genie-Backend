@@ -1,5 +1,5 @@
-import { supabase } from '../config/supabase.js';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 // this function adds one or multiple relationships to the database,
 // accepting a userID and an array of one or more entries which are Org IDs
@@ -15,7 +15,7 @@ export async function addRelationshipUserOrg(
 	userID: number,
 	organisationIDs: Array<number>,
 	wishlistedOrRejected: Array<WishlistStatus>,
-	client: SupabaseClient = supabase
+	client: SupabaseClient = supabaseAdmin
 ) {
 	if (organisationIDs.length !== wishlistedOrRejected.length) {
 		throw new Error('Organisation and wishlist arrays not same length');
@@ -29,7 +29,10 @@ export async function addRelationshipUserOrg(
 
 	const { data, error } = await client
 		.from('User-Wishlist')
-		.insert(relationships)
+		.upsert(relationships, {
+			onConflict: 'user_fk,wishlist_fk',
+			ignoreDuplicates: true,
+		})
 		.select();
 
 	if (error) {

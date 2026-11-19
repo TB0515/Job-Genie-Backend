@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../config/supabase.js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 export const requireAuth = async (
 	req: Request,
@@ -21,7 +22,7 @@ export const requireAuth = async (
 		return;
 	}
 
-	const { data: userRow, error: userError } = await supabase
+	const { data: userRow, error: userError } = await supabaseAdmin
 		.from('Users')
 		.select('email, username, first_name, last_name, phone')
 		.eq('auth_user_id', data.user.id)

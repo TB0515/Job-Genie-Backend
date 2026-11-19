@@ -1,10 +1,10 @@
-import { supabase } from '../config/supabase.js';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 export async function deleteRelationshipUserOrg(
 	userID: number,
 	organisationIDs: Array<number>,
-	client: SupabaseClient = supabase
+	client: SupabaseClient = supabaseAdmin
 ) {
 	const { error } = await client
 		.from('User-Wishlist')

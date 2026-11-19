@@ -1,9 +1,9 @@
-import { supabase } from '../config/supabase.js';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 export async function getOrgsByUser(
 	userID: number,
-	client: SupabaseClient = supabase
+	client: SupabaseClient = supabaseAdmin
 ) {
 	const { data, error } = await client
 		.from('User-Wishlist')

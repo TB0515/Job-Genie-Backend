@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { fetchTheirStackJobs, TheirStackJob } from '../services/theirStack.js';
 import { Company } from '../data/companies.js';
-import { supabase } from '../config/supabase.js';
 import { getOrgsByUser } from '../services/getOrgsByUser.js';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 interface JobsByWishlistRequestBody {
 	postedAt: number;
@@ -17,7 +17,7 @@ interface JobsByWishlistResult {
 }
 
 async function getCompaniesFromDB(authUuid: string): Promise<Company[]> {
-	const { data: userRow, error: userError } = await supabase
+	const { data: userRow, error: userError } = await supabaseAdmin
 		.from('Users')
 		.select('id')
 		.eq('auth_user_id', authUuid)
@@ -29,7 +29,7 @@ async function getCompaniesFromDB(authUuid: string): Promise<Company[]> {
 	if (!relationships || relationships.length === 0) return [];
 
 	const orgIds = relationships.map((r) => r.wishlist_fk);
-	const { data: orgs, error: orgsError } = await supabase
+	const { data: orgs, error: orgsError } = await supabaseAdmin
 		.from('Wishlist')
 		.select('*')
 		.in('id', orgIds);
@@ -73,7 +73,7 @@ export const getJobsForWishlist = async (req: Request, res: Response) => {
 				);
 
 				if (jobs.length > 0) {
-					await supabase
+					await supabaseAdmin
 						.from('Wishlist')
 						.update({ jobs })
 						.ilike('name', company.name);
