@@ -17,7 +17,10 @@ export async function addUser(
 	newUser: addUserObject,
 	client: SupabaseClient = supabase
 ) {
-	const { data, error } = await client.from('Users').insert(newUser).select();
+	const { data, error } = await client
+		.from('Users')
+		.upsert(newUser, { onConflict: 'auth_user_id' })
+		.select();
 
 	if (error) {
 		throw new Error(error.message);

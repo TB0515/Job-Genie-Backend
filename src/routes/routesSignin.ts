@@ -14,6 +14,6 @@ router.post('/google', googleAuth);
 router.post('/signup', signUp);
 router.post('/logout', logOut);
 router.post('/login', logIn);
-router.post('/me', requireAuth, authMe);
+router.get('/me', requireAuth, authMe);
 
 export default router;

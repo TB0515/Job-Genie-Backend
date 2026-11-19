@@ -68,7 +68,7 @@ export const generateWishlist = async (
 
 	try {
 		const message = await anthropic.messages.create({
-			model: 'claude-sonnet-4-20250514',
+			model: 'claude-sonnet-4-6',
 			max_tokens: 2000,
 			tools: [GENERATE_COMPANIES_TOOL],
 			tool_choice: { type: 'tool', name: 'generate_companies' },

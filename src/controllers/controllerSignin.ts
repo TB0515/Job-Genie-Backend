@@ -3,9 +3,11 @@ import { supabase } from '../config/supabase.js';
 import { addUser } from '../services/addUser.js';
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
+import { supabaseAdmin } from '../config/supabaseAdmin.js';
 
 dotenv.config();
 
+const isProd = process.env.NODE_ENV === 'production';
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 async function verifyGoogleToken(
@@ -46,8 +48,8 @@ export const googleAuth = async (
 
 		res.cookie('sb_token', data.session.access_token, {
 			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'none',
+			secure: isProd,
+			sameSite: isProd ? 'none' : 'lax',
 			path: '/',
 		});
 
@@ -59,14 +61,17 @@ export const googleAuth = async (
 
 		if (userError || !userRow) {
 			try {
-				await addUser({
-					auth_user_id: data.user.id,
-					email: payload.email ?? '',
-					first_name: payload.given_name ?? '',
-					last_name: payload.family_name ?? '',
-					phone: '',
-					username: payload.email ?? '',
-				});
+				await addUser(
+					{
+						auth_user_id: data.user.id,
+						email: payload.email ?? '',
+						first_name: payload.given_name ?? '',
+						last_name: payload.family_name ?? '',
+						phone: '',
+						username: payload.email ?? '',
+					},
+					supabaseAdmin
+				);
 			} catch (insertErr) {
 				console.warn('addUser failed for Google OAuth user:', insertErr);
 			}
@@ -116,14 +121,17 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 		}
 		if (data.user) {
 			try {
-				await addUser({
-					auth_user_id: data.user.id,
-					email,
-					first_name: firstName,
-					last_name: lastName,
-					phone: phone ?? '',
-					username: email,
-				});
+				await addUser(
+					{
+						auth_user_id: data.user.id,
+						email,
+						first_name: firstName,
+						last_name: lastName,
+						phone: phone ?? '',
+						username: email,
+					},
+					supabaseAdmin
+				);
 			} catch (insertErr) {
 				console.warn('addUser failed during signup:', insertErr);
 			}
@@ -156,8 +164,8 @@ export const logIn = async (req: Request, res: Response): Promise<void> => {
 
 		res.cookie('sb_token', session.access_token, {
 			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'none',
+			secure: isProd,
+			sameSite: isProd ? 'none' : 'lax',
 			path: '/',
 		});
 

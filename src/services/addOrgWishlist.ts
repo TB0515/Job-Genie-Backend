@@ -24,7 +24,14 @@ export async function addOrg(
 
 	if (error) {
 		if (error.code === '23505') {
-			throw new Error(`Organisation "${name}" in "${city}" already exists`);
+			const { data: existing, error: findError } = await supabase
+				.from('Wishlist')
+				.select()
+				.eq('name', name)
+				.eq('city', city);
+
+			if (findError) throw new Error(findError.message);
+			return existing;
 		}
 		throw new Error(error.message);
 	}
