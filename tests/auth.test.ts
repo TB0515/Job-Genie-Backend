@@ -139,8 +139,8 @@ describe('Auth API', () => {
 				.expect(200);
 
 			expect(res.body.success).toBe(true);
-			const cookies = res.headers['set-cookie'] as string[];
-			expect(cookies.some((c: string) => c.startsWith('sb_token='))).toBe(true);
+			const cookies = res.get('Set-Cookie') ?? [];
+			expect(cookies.some((c) => c.startsWith('sb_token='))).toBe(true);
 		});
 
 		it('returns 400 with message on wrong password', async () => {
