@@ -23,11 +23,12 @@ const updateUserData2 = {
 };
 
 beforeAll(async () => {
-	const { data } = await supabaseAdmin.auth.admin.createUser({
+	const { data, error } = await supabaseAdmin.auth.admin.createUser({
 		email: TEST_EMAIL,
-		password: 'test-password-123',
+		password: 'Test-password-123!',
 		email_confirm: true,
 	});
+	if (error) throw error;
 	authUserId = data.user!.id;
 
 	// Upsert handles both: trigger auto-created a row, or no trigger
@@ -48,8 +49,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-	await supabaseAdmin.from('Users').delete().eq('auth_user_id', authUserId);
-	await supabaseAdmin.auth.admin.deleteUser(authUserId);
+	if (authUserId) {
+		await supabaseAdmin.from('Users').delete().eq('auth_user_id', authUserId);
+		await supabaseAdmin.auth.admin.deleteUser(authUserId);
+	}
 });
 
 describe('updateUser', () => {

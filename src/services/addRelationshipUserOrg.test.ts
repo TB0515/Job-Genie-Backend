@@ -14,11 +14,13 @@ let testOrgId1: number;
 let testOrgId2: number;
 
 beforeAll(async () => {
-	const { data: authData } = await supabaseAdmin.auth.admin.createUser({
+	const { data: authData, error } = await supabaseAdmin.auth.admin.createUser({
 		email: TEST_EMAIL,
-		password: 'test-password-123',
+		password: 'Test-password-123!',
 		email_confirm: true,
 	});
+	if (error) throw error;
+
 	authUserId = authData.user!.id;
 
 	// Upsert handles both: trigger auto-created a row, or no trigger
@@ -76,10 +78,12 @@ beforeAll(async () => {
 
 afterAll(async () => {
 	await supabaseAdmin.from('User-Wishlist').delete().eq('user_fk', testUserId);
-	await supabaseAdmin.from('Users').delete().eq('auth_user_id', authUserId);
 	await supabaseAdmin.from('Wishlist').delete().eq('name', TEST_ORG_NAME_1);
 	await supabaseAdmin.from('Wishlist').delete().eq('name', TEST_ORG_NAME_2);
-	await supabaseAdmin.auth.admin.deleteUser(authUserId);
+	if (authUserId) {
+		await supabaseAdmin.from('Users').delete().eq('auth_user_id', authUserId);
+		await supabaseAdmin.auth.admin.deleteUser(authUserId);
+	}
 });
 
 describe('addRelationshipUserOrg', () => {
