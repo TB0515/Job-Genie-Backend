@@ -2,6 +2,7 @@ import { Company } from '../data/companies.js';
 import Anthropic from '@anthropic-ai/sdk';
 import { anthropicApiKey } from '../config/environment.js';
 import { isHttpUrl, logoFromWebsite } from '../utils/url.js';
+import { MAX_COMPANIES } from '../config/limits.js';
 
 interface FilterInput {
 	industry?: string;
@@ -100,7 +101,9 @@ export const generateWishlist = async (
 				description: company.description,
 				logoUrl: logoFromWebsite(company.websiteUrl),
 				websiteUrl: company.websiteUrl,
-			}));
+			}))
+			// /jobs accepts at most MAX_COMPANIES, so never return more than that
+			.slice(0, MAX_COMPANIES);
 
 		return companies;
 	} catch (error) {

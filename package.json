@@ -4,11 +4,12 @@
 		"@anthropic-ai/sdk": "^0.71.2",
 		"@supabase/supabase-js": "^2.86.0",
 		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",
 		"express": "^5.1.0",
-		"undici": "^7.16.0",
-		"cors": "^2.8.5",
-		"google-auth-library": "^10.5.0"
+		"express-rate-limit": "^8.7.5",
+		"google-auth-library": "^10.5.0",
+		"undici": "^7.16.0"
 	},
 	"devDependencies": {
 		"@types/connect": "^3.4.38",
