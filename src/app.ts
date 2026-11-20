@@ -6,6 +6,7 @@ import signinRoutes from './routes/routesSignin.js';
 import wishlistRouter from './routes/wishlist.route.js';
 import jobRoutes from './routes/jobRoutes.js';
 import { requireAuth } from './middleware/requireAuth.js';
+import { checkOrigin } from './middleware/checkOrigin.js';
 import { config } from './config/environment.js';
 
 const app: Application = express();
@@ -17,9 +18,9 @@ app.use(
 		credentials: true, // allow cookies / auth headers
 	})
 );
+app.use(checkOrigin);
 app.use(cookieParser());
 app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true }));
 
 // API routing
 app.use('/auth', signinRoutes);
@@ -44,9 +45,24 @@ app.use((req: Request, res: Response) => {
 });
 
 // Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-	console.error(err.stack);
-	res.status(500).json({ error: 'Something went wrong!' });
-});
+app.use(
+	(
+		err: Error & { status?: number },
+		req: Request,
+		res: Response,
+		next: NextFunction
+	) => {
+		if (err.status === 413) {
+			res.status(413).json({ success: false, error: 'Request too large' });
+			return;
+		}
+		if (err.status && err.status < 500) {
+			res.status(err.status).json({ success: false, error: 'Invalid request' });
+			return;
+		}
+		console.error(err.stack);
+		res.status(500).json({ success: false, error: 'Something went wrong!' });
+	}
+);
 
 export default app;
