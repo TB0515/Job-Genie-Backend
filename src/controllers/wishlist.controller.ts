@@ -6,6 +6,7 @@ import { addRelationshipUserOrg } from '../services/addRelationshipUserOrg.js';
 import { deleteRelationshipUserOrg } from '../services/deleteRelationshipUserOrg.js';
 import { getOrgsByUser } from '../services/getOrgsByUser.js';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
+import { logoFromWebsite } from '../utils/url.js';
 
 // Look up the numeric PK for a user by their Supabase auth UUID
 async function getUserNumericId(authUuid: string): Promise<number> {
@@ -94,8 +95,7 @@ export const addToWishlist = async (
 		const authUuid = req.user!.id; // user is set by requireAuth
 		const numericId = await getUserNumericId(authUuid);
 
-		const resolvedLogoUrl =
-			logoUrl || `https://logo.clearbit.com/${extractDomain(websiteUrl)}`;
+		const resolvedLogoUrl = logoUrl || logoFromWebsite(websiteUrl);
 
 		const orgData = await addOrg(
 			name,
@@ -299,13 +299,3 @@ export const generateWishlistFromFilters = async (
 		});
 	}
 };
-
-// Helper function to extract domain from URL
-function extractDomain(websiteUrl: string): string {
-	try {
-		const url = new URL(websiteUrl);
-		return url.hostname.replace('www.', '');
-	} catch {
-		return websiteUrl.replace(/https?:\/\/(www\.)?/, '').split('/')[0];
-	}
-}

@@ -1,6 +1,7 @@
 import { Company } from '../data/companies.js';
 import Anthropic from '@anthropic-ai/sdk';
 import { anthropicApiKey } from '../config/environment.js';
+import { isHttpUrl, logoFromWebsite } from '../utils/url.js';
 
 interface FilterInput {
 	industry?: string;
@@ -86,17 +87,20 @@ export const generateWishlist = async (
 			throw new Error('Claude tool response missing generatedCompanies array');
 		}
 
-		// Convert to our Company format with IDs and logos
-		const companies: Company[] = generatedCompanies.map((company) => ({
-			name: company.name,
-			industry: company.industry,
-			size: company.size,
-			city: company.city,
-			country: company.country,
-			description: company.description,
-			logoUrl: `https://logo.clearbit.com/${company.name.toLowerCase().replace(/\s+/g, '')}.com`,
-			websiteUrl: company.websiteUrl,
-		}));
+		// Convert to our Company format with logos.
+		// Skip any company without a real http(s) website, since the frontend links to it.
+		const companies: Company[] = generatedCompanies
+			.filter((company) => isHttpUrl(company.websiteUrl))
+			.map((company) => ({
+				name: company.name,
+				industry: company.industry,
+				size: company.size,
+				city: company.city,
+				country: company.country,
+				description: company.description,
+				logoUrl: logoFromWebsite(company.websiteUrl),
+				websiteUrl: company.websiteUrl,
+			}));
 
 		return companies;
 	} catch (error) {
