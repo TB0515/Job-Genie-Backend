@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
+import type { Response, NextFunction } from 'express';
+import type { AuthenticatedRequest } from '../src/types/auth.js';
 import app from '../src/app.js';
 
 // Hoisted mock refs so they're accessible both inside vi.mock and in tests
@@ -9,8 +11,19 @@ const mockSignInWithIdToken = vi.hoisted(() => vi.fn());
 
 // Mock requireAuth to inject a fake user (for /auth/me)
 vi.mock('../src/middleware/requireAuth.js', () => ({
-	requireAuth: (req: any, _res: any, next: any) => {
-		req.user = { id: 'test-uuid', email: 'test@test.com' };
+	requireAuth: (
+		req: AuthenticatedRequest,
+		_res: Response,
+		next: NextFunction
+	) => {
+		req.user = {
+			id: 'test-uuid',
+			email: 'test@test.com',
+			given_name: 'Test',
+			name: 'Test User',
+			phone: null,
+			username: 'test@test.com',
+		};
 		next();
 	},
 }));
@@ -180,7 +193,7 @@ describe('Auth API', () => {
 			const res = await request(app).get('/auth/me').expect(200);
 
 			expect(res.body.success).toBe(true);
-			expect(res.body.id).toBe('test-uuid');
+			expect(res.body.email).toBe('test@test.com');
 		});
 	});
 
