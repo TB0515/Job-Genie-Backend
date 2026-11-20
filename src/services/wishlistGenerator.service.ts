@@ -88,8 +88,7 @@ export const generateWishlist = async (
 			throw new Error('Claude tool response missing generatedCompanies array');
 		}
 
-		// Convert to our Company format with logos.
-		// Skip any company without a real http(s) website, since the frontend links to it.
+		// Convert to our Company format with IDs and logos
 		const companies: Company[] = generatedCompanies
 			.filter((company) => isHttpUrl(company.websiteUrl))
 			.map((company) => ({
@@ -102,7 +101,6 @@ export const generateWishlist = async (
 				logoUrl: logoFromWebsite(company.websiteUrl),
 				websiteUrl: company.websiteUrl,
 			}))
-			// /jobs accepts at most MAX_COMPANIES, so never return more than that
 			.slice(0, MAX_COMPANIES);
 
 		return companies;

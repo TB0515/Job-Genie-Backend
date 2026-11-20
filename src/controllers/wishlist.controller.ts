@@ -28,7 +28,7 @@ export const getAllWishlist = async (
 	res: Response
 ) => {
 	try {
-		const authUuid = req.user!.id; // user is set by requireAuth
+		const authUuid = req.user!.id;
 		const numericId = await getUserNumericId(authUuid);
 
 		const relationships = await getOrgsByUser(numericId);
@@ -92,7 +92,7 @@ export const addToWishlist = async (
 	}
 
 	try {
-		const authUuid = req.user!.id; // user is set by requireAuth
+		const authUuid = req.user!.id;
 		const numericId = await getUserNumericId(authUuid);
 
 		const resolvedLogoUrl = logoUrl || logoFromWebsite(websiteUrl);
@@ -135,7 +135,7 @@ export const deleteFromWishlist = async (
 	}
 
 	try {
-		const authUuid = req.user!.id; // user is set by requireAuth
+		const authUuid = req.user!.id;
 		const numericId = await getUserNumericId(authUuid);
 
 		const { data: orgData, error: orgError } = await supabaseAdmin
@@ -241,7 +241,7 @@ export const generateWishlistFromFilters = async (
 			});
 		}
 
-		const authUuid = req.user!.id; // user is set by requireAuth
+		const authUuid = req.user!.id;
 		const numericId = await getUserNumericId(authUuid);
 
 		console.log('🤖 Generating wishlist with Claude AI...');

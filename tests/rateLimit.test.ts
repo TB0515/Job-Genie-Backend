@@ -4,8 +4,6 @@ import type { Response, NextFunction } from 'express';
 import type { AuthenticatedRequest } from '../src/types/auth.js';
 import app from '../src/app.js';
 
-// Separate test file so the rate limiter's counter starts from zero
-
 vi.mock('../src/middleware/requireAuth.js', () => ({
 	requireAuth: (
 		req: AuthenticatedRequest,
@@ -24,12 +22,10 @@ vi.mock('../src/middleware/requireAuth.js', () => ({
 	},
 }));
 
-// Mock TheirStack so no real API credits are used
 vi.mock('../src/services/theirStack.js', () => ({
 	fetchTheirStackJobs: vi.fn().mockResolvedValue([]),
 }));
 
-// Mock Supabase so no real DB calls are made
 vi.mock('../src/config/supabase.js', () => ({ supabase: {} }));
 vi.mock('../src/config/supabaseAdmin.js', () => ({ supabaseAdmin: {} }));
 

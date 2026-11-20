@@ -6,7 +6,6 @@ import { getOrgsByUser } from '../services/getOrgsByUser.js';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
 import { MAX_COMPANIES, MAX_POSTED_AT_DAYS } from '../config/limits.js';
 
-// The frontend only sends each company's id and name; we only need the name
 interface CompanyName {
 	name: string;
 }
@@ -15,7 +14,7 @@ interface JobsByWishlistRequestBody {
 	postedAt?: number;
 	companies?: CompanyName[];
 	jobTitles?: string[];
-	remote?: boolean | null; // sent by the frontend, not used yet
+	remote?: boolean | null;
 }
 
 interface JobsByWishlistResult {
@@ -23,7 +22,6 @@ interface JobsByWishlistResult {
 	jobs: TheirStackJob[];
 }
 
-// Returns an error message if the request body is invalid, or null if it is fine
 function validateJobsRequest(body: JobsByWishlistRequestBody): string | null {
 	const { companies, postedAt, jobTitles } = body;
 
@@ -110,7 +108,7 @@ export const getJobsForWishlist = async (
 		const sourceCompanies: CompanyName[] =
 			companies && companies.length > 0
 				? companies
-				: (await getCompaniesFromDB(req.user!.id)).slice(0, MAX_COMPANIES); // user is set by requireAuth
+				: (await getCompaniesFromDB(req.user!.id)).slice(0, MAX_COMPANIES);
 
 		if (!sourceCompanies || sourceCompanies.length === 0) {
 			return res.status(400).json({
