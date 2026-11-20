@@ -70,16 +70,14 @@ The project has two types of tests.
 - API tests are in the tests/ folder. These tests use mocks for Supabase, Google, Claude and TheirStack.
 
 ```bash
-npx vitest run tests/
+npm test
 ```
 
 - Database tests are in src/services/\*.test.ts. These tests write rows to your Supabase project and then delete them. Use a development project for these tests.
 
 ```bash
-npm test
+npm run test:db
 ```
-
-npm test runs all tests, which includes the database tests. It starts Vitest in watch mode. Press `q` to stop.
 
 ## My contribution
 
@@ -96,7 +94,7 @@ After the course, I returned to shape this project:
 - Reliability: I added startup checks for the API keys and the CORS_ORIGIN setting. I also made the production build and the Render deployment.
 - Safari support: The frontend sends API requests through Render rewrite rules. Thus, the session cookie is first-party and Safari accepts it.
 - Tests: I wrote the integration tests for auth and jobs. I isolated the database tests with setup and cleanup steps.
-- Code quality: With Claude Code, I reviewed and removed all `any` types, added per-user rate limits and input validation, and changed the company logos to Google favicons.
+- Code quality: With Claude Code, I reviewed and removed all `any` types, added per-user rate limits and input validation, and changed the company logos to Google favicons. I also added Helmet security headers, a startup check for the Google client ID and separate commands for the API and database tests.
 - Tooling: I made the multi-agent Claude Code review.
 
 ## Code review with Claude Code agents

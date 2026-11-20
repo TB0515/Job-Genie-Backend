@@ -4,15 +4,17 @@ dotenv.config();
 
 const theirStackTokenValue = process.env.THEIRSTACK_TOKEN;
 const anthropicApiKeyValue = process.env.ANTHROPIC_API_KEY;
+const googleClientIdValue = process.env.GOOGLE_CLIENT_ID;
 
-if (!theirStackTokenValue || !anthropicApiKeyValue) {
+if (!theirStackTokenValue || !anthropicApiKeyValue || !googleClientIdValue) {
 	throw new Error(
-		'Missing required environment variables: THEIRSTACK_TOKEN, ANTHROPIC_API_KEY'
+		'Missing required environment variables: THEIRSTACK_TOKEN, ANTHROPIC_API_KEY, GOOGLE_CLIENT_ID'
 	);
 }
 
 export const theirStackToken: string = theirStackTokenValue;
 export const anthropicApiKey: string = anthropicApiKeyValue;
+export const googleClientId: string = googleClientIdValue;
 
 export const config = {
 	port: process.env.PORT || 3000,

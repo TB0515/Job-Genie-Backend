@@ -7,18 +7,19 @@ import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
 import { cookieOptions } from '../config/cookies.js';
 import { AuthenticatedRequest } from '../types/auth.js';
+import { googleClientId } from '../config/environment.js';
 
 dotenv.config();
 
 const isProd = process.env.NODE_ENV === 'production';
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(googleClientId);
 
 async function verifyGoogleToken(
 	token: string
 ): Promise<TokenPayload | undefined> {
 	const ticket = await client.verifyIdToken({
 		idToken: token,
-		audience: process.env.GOOGLE_CLIENT_ID,
+		audience: googleClientId,
 	});
 	const payload = ticket.getPayload();
 	return payload; // Contains user info: email, name, picture, sub (unique ID)

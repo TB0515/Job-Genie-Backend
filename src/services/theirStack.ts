@@ -1,5 +1,10 @@
 import { request } from 'undici';
 import { theirStackToken } from '../config/environment.js';
+import {
+	JOB_COUNTRY_CODES,
+	THEIRSTACK_JOBS_URL,
+	THEIRSTACK_TIMEOUT_MS,
+} from '../config/externalApis.js';
 
 export interface TheirStackJob {
 	id: string;
@@ -36,12 +41,15 @@ export async function fetchTheirStackJobs(
 		// "discovered_at_max_age_days": discoveredAt || 0,
 		// "remote": remote || null,
 		// "job_seniority_or": jobSeniority.length > 0 ? jobSeniority : ["junior"],
-		job_country_code_or: jobLocation.length > 0 ? jobLocation : ['GB'],
+		job_country_code_or:
+			jobLocation.length > 0 ? jobLocation : JOB_COUNTRY_CODES,
 	};
 	const { statusCode, body: responseBody } = await request(
-		'https://api.theirstack.com/v1/jobs/search',
+		THEIRSTACK_JOBS_URL,
 		{
 			method: 'POST',
+			headersTimeout: THEIRSTACK_TIMEOUT_MS,
+			bodyTimeout: THEIRSTACK_TIMEOUT_MS,
 			headers: {
 				'Content-Type': 'application/json',
 				Authorization: `Bearer ${theirStackToken}`,

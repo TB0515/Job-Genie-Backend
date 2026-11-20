@@ -1,5 +1,6 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
 import signinRoutes from './routes/routesSignin.js';
@@ -12,6 +13,7 @@ import { config } from './config/environment.js';
 const app: Application = express();
 
 // Middleware
+app.use(helmet());
 app.use(
 	cors({
 		origin: config.corsOrigin,
