@@ -124,7 +124,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 			return;
 		}
 
-		const phoneNumber = typeof phone === 'string' ? phone : '';
+		const phoneNumber = phone?.trim() || undefined;
 		const [firstName, ...otherNames] = name.trim().split(/\s+/);
 		const lastName = otherNames.join(' ');
 		const { data, error } = await supabase.auth.signUp({
@@ -150,7 +150,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 						email,
 						first_name: firstName,
 						last_name: lastName,
-						phone: phoneNumber,
+						phone: phoneNumber ?? '',
 						username: email,
 					},
 					supabaseAdmin
