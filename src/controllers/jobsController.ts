@@ -5,6 +5,7 @@ import { Company } from '../data/companies.js';
 import { getOrgsByUser } from '../services/getOrgsByUser.js';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
 import { MAX_COMPANIES, MAX_POSTED_AT_DAYS } from '../config/limits.js';
+import { JOB_COUNTRY_CODES } from '../config/externalApis.js';
 
 interface CompanyName {
 	name: string;
@@ -125,7 +126,7 @@ export const getJobsForWishlist = async (
 					postedAt,
 					company.name,
 					jobTitles,
-					['GB']
+					JOB_COUNTRY_CODES
 				);
 
 				if (jobs.length > 0) {

@@ -18,6 +18,13 @@ describe('Server Health Check', () => {
 		expect(response.body).toHaveProperty('status', 'ok');
 	});
 
+	it('sends security headers and hides X-Powered-By', async () => {
+		const response = await request(app).get('/health');
+
+		expect(response.headers['x-content-type-options']).toBe('nosniff');
+		expect(response.headers['x-powered-by']).toBeUndefined();
+	});
+
 	it('should return welcome message on root endpoint', async () => {
 		const response = await request(app).get('/');
 

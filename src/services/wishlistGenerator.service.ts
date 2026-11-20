@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { anthropicApiKey } from '../config/environment.js';
 import { isHttpUrl, logoFromWebsite } from '../utils/url.js';
 import { MAX_COMPANIES } from '../config/limits.js';
+import { CLAUDE_MODEL } from '../config/externalApis.js';
 
 interface FilterInput {
 	industry?: string;
@@ -70,7 +71,7 @@ export const generateWishlist = async (
 
 	try {
 		const message = await anthropic.messages.create({
-			model: 'claude-sonnet-4-6',
+			model: CLAUDE_MODEL,
 			max_tokens: 2000,
 			tools: [GENERATE_COMPANIES_TOOL],
 			tool_choice: { type: 'tool', name: 'generate_companies' },
