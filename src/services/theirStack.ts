@@ -14,7 +14,6 @@ export interface TheirStackJob {
 	source_url?: string;
 }
 
-// TheirStack returns jobs either directly in `data` or in `data.results`
 interface TheirStackSearchResponse {
 	data?: TheirStackJob[] | { results?: TheirStackJob[] };
 }

@@ -146,4 +146,35 @@ describe('Jobs API', () => {
 
 		expect(res.body.success).toBe(false);
 	});
+
+	it('POST /jobs with more than 5 companies returns 400 without calling TheirStack', async () => {
+		mockFetchTheirStackJobs.mockClear();
+		const companies = ['A', 'B', 'C', 'D', 'E', 'F'].map((name) => ({ name }));
+
+		const res = await request(app)
+			.post('/jobs')
+			.send({ companies })
+			.expect(400);
+
+		expect(res.body.success).toBe(false);
+		expect(mockFetchTheirStackJobs).not.toHaveBeenCalled();
+	});
+
+	it('POST /jobs with postedAt over 7 days returns 400', async () => {
+		const res = await request(app)
+			.post('/jobs')
+			.send({ companies: [{ name: 'TestCo' }], postedAt: 100 })
+			.expect(400);
+
+		expect(res.body.success).toBe(false);
+	});
+
+	it('POST /jobs with jobTitles that is not a list returns 400', async () => {
+		const res = await request(app)
+			.post('/jobs')
+			.send({ companies: [{ name: 'TestCo' }], jobTitles: 'abc' })
+			.expect(400);
+
+		expect(res.body.success).toBe(false);
+	});
 });

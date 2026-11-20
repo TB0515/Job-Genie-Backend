@@ -225,7 +225,7 @@ export const logOut = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const authMe = (req: AuthenticatedRequest, res: Response): void => {
-	const user = req.user!; // user is set by requireAuth
+	const user = req.user!;
 	res.json({
 		success: true,
 		email: user.email,

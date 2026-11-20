@@ -4,17 +4,63 @@ import { fetchTheirStackJobs, TheirStackJob } from '../services/theirStack.js';
 import { Company } from '../data/companies.js';
 import { getOrgsByUser } from '../services/getOrgsByUser.js';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
+import { MAX_COMPANIES, MAX_POSTED_AT_DAYS } from '../config/limits.js';
+
+interface CompanyName {
+	name: string;
+}
 
 interface JobsByWishlistRequestBody {
-	postedAt: number;
-	companies: Company[];
-	jobTitles: string[];
-	remote: boolean | null;
+	postedAt?: number;
+	companies?: CompanyName[];
+	jobTitles?: string[];
+	remote?: boolean | null;
 }
 
 interface JobsByWishlistResult {
 	company: string;
 	jobs: TheirStackJob[];
+}
+
+function validateJobsRequest(body: JobsByWishlistRequestBody): string | null {
+	const { companies, postedAt, jobTitles } = body;
+
+	if (companies !== undefined) {
+		if (!Array.isArray(companies)) {
+			return 'companies must be a list';
+		}
+		if (companies.length > MAX_COMPANIES) {
+			return `You can search jobs for at most ${MAX_COMPANIES} companies at a time`;
+		}
+		const everyCompanyHasName = companies.every(
+			(company) =>
+				typeof company?.name === 'string' && company.name.trim() !== ''
+		);
+		if (!everyCompanyHasName) {
+			return 'Each company needs a name';
+		}
+	}
+
+	if (postedAt !== undefined) {
+		const isValidDays =
+			Number.isInteger(postedAt) &&
+			postedAt >= 1 &&
+			postedAt <= MAX_POSTED_AT_DAYS;
+		if (!isValidDays) {
+			return `postedAt must be a whole number of days from 1 to ${MAX_POSTED_AT_DAYS}`;
+		}
+	}
+
+	if (jobTitles !== undefined) {
+		const isListOfStrings =
+			Array.isArray(jobTitles) &&
+			jobTitles.every((title) => typeof title === 'string');
+		if (!isListOfStrings) {
+			return 'jobTitles must be a list of strings';
+		}
+	}
+
+	return null;
 }
 
 async function getCompaniesFromDB(authUuid: string): Promise<Company[]> {
@@ -45,18 +91,24 @@ export const getJobsForWishlist = async (
 	res: Response
 ) => {
 	try {
+		const body: JobsByWishlistRequestBody = req.body ?? {};
+
+		const validationError = validateJobsRequest(body);
+		if (validationError) {
+			return res.status(400).json({ success: false, message: validationError });
+		}
+
 		const {
-			postedAt,
+			postedAt = MAX_POSTED_AT_DAYS,
 			companies,
 			jobTitles = ['software engineer', 'developer'],
-			remote,
-		} = req.body as JobsByWishlistRequestBody;
+		} = body;
 
 		// Use explicit companies if provided, otherwise fall back to user's DB wishlist
-		const sourceCompanies: Company[] =
+		const sourceCompanies: CompanyName[] =
 			companies && companies.length > 0
 				? companies
-				: await getCompaniesFromDB(req.user!.id); // user is set by requireAuth
+				: (await getCompaniesFromDB(req.user!.id)).slice(0, MAX_COMPANIES);
 
 		if (!sourceCompanies || sourceCompanies.length === 0) {
 			return res.status(400).json({
@@ -70,7 +122,7 @@ export const getJobsForWishlist = async (
 				const jobs = await fetchTheirStackJobs(
 					0,
 					5,
-					postedAt || 7,
+					postedAt,
 					company.name,
 					jobTitles,
 					['GB']
@@ -80,7 +132,7 @@ export const getJobsForWishlist = async (
 					await supabaseAdmin
 						.from('Wishlist')
 						.update({ jobs })
-						.ilike('name', company.name);
+						.eq('name', company.name);
 				}
 
 				return {
