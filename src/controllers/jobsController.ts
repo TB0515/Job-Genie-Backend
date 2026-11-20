@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../types/auth.js';
 import { fetchTheirStackJobs, TheirStackJob } from '../services/theirStack.js';
 import { Company } from '../data/companies.js';
 import { getOrgsByUser } from '../services/getOrgsByUser.js';
@@ -39,7 +40,10 @@ async function getCompaniesFromDB(authUuid: string): Promise<Company[]> {
 	return orgs as Company[];
 }
 
-export const getJobsForWishlist = async (req: Request, res: Response) => {
+export const getJobsForWishlist = async (
+	req: AuthenticatedRequest,
+	res: Response
+) => {
 	try {
 		const {
 			postedAt,
@@ -52,7 +56,7 @@ export const getJobsForWishlist = async (req: Request, res: Response) => {
 		const sourceCompanies: Company[] =
 			companies && companies.length > 0
 				? companies
-				: await getCompaniesFromDB((req as any).user.id);
+				: await getCompaniesFromDB(req.user!.id); // user is set by requireAuth
 
 		if (!sourceCompanies || sourceCompanies.length === 0) {
 			return res.status(400).json({

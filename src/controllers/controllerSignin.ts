@@ -1,10 +1,12 @@
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../config/supabase.js';
 import { addUser } from '../services/addUser.js';
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
 import { cookieOptions } from '../config/cookies.js';
+import { AuthenticatedRequest } from '../types/auth.js';
 
 dotenv.config();
 
@@ -142,7 +144,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 async function authenticateUser(
 	email: string,
 	password: string
-): Promise<{ session: any; user: any }> {
+): Promise<{ session: Session; user: User }> {
 	const { data, error } = await supabase.auth.signInWithPassword({
 		email,
 		password,
@@ -185,8 +187,9 @@ export const logIn = async (req: Request, res: Response): Promise<void> => {
 			name: `${userRow.first_name ?? ''} ${userRow.last_name ?? ''}`.trim(),
 			phone: userRow.phone,
 		});
-	} catch (error: any) {
-		res.status(400).json({ message: error.message });
+	} catch (error) {
+		const message = error instanceof Error ? error.message : 'Login failed';
+		res.status(400).json({ message });
 	}
 };
 
@@ -221,6 +224,13 @@ export const logOut = async (req: Request, res: Response): Promise<void> => {
 	res.json({ success: true, message: 'Logged out successfully' });
 };
 
-export const authMe = (req: Request, res: Response): void => {
-	res.json({ success: true, ...(req as any).user });
+export const authMe = (req: AuthenticatedRequest, res: Response): void => {
+	const user = req.user!; // user is set by requireAuth
+	res.json({
+		success: true,
+		email: user.email,
+		given_name: user.given_name,
+		name: user.name,
+		phone: user.phone,
+	});
 };

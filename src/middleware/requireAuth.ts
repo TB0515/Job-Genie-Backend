@@ -1,11 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { supabase } from '../config/supabase.js';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
 import { cookieOptions } from '../config/cookies.js';
+import { AuthenticatedRequest } from '../types/auth.js';
 
 const isProd = process.env.NODE_ENV === 'production';
 export const requireAuth = async (
-	req: Request,
+	req: AuthenticatedRequest,
 	res: Response,
 	next: NextFunction
 ): Promise<void> => {
@@ -35,7 +36,7 @@ export const requireAuth = async (
 		return;
 	}
 
-	(req as any).user = {
+	req.user = {
 		id: data.user.id,
 		email: userRow.email,
 		given_name: userRow.first_name,

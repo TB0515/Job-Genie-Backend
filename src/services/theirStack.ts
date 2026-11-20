@@ -14,6 +14,11 @@ export interface TheirStackJob {
 	source_url?: string;
 }
 
+// TheirStack returns jobs either directly in `data` or in `data.results`
+interface TheirStackSearchResponse {
+	data?: TheirStackJob[] | { results?: TheirStackJob[] };
+}
+
 export async function fetchTheirStackJobs(
 	page: number,
 	limit: number,
@@ -50,12 +55,9 @@ export async function fetchTheirStackJobs(
 		console.error('TheirStack error', statusCode, text);
 		throw new Error(`TheirStack error ${statusCode}: ${text}`);
 	}
-	const jsonBody: any = await responseBody.json();
+	const jsonBody = (await responseBody.json()) as TheirStackSearchResponse;
 	const data = jsonBody.data;
-	const jobs: TheirStackJob[] = Array.isArray(data)
-		? data
-		: Array.isArray(data.results)
-			? data.results
-			: [];
-	return jobs;
+	if (Array.isArray(data)) return data;
+	if (data && Array.isArray(data.results)) return data.results;
+	return [];
 }

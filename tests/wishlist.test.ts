@@ -1,11 +1,24 @@
 import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
+import type { Response, NextFunction } from 'express';
+import type { AuthenticatedRequest } from '../src/types/auth.js';
 import app from '../src/app.js';
 
 // Mock requireAuth to inject a fake user and skip token verification
 vi.mock('../src/middleware/requireAuth.js', () => ({
-	requireAuth: (req: any, _res: any, next: any) => {
-		req.user = { id: 'test-uuid-123' };
+	requireAuth: (
+		req: AuthenticatedRequest,
+		_res: Response,
+		next: NextFunction
+	) => {
+		req.user = {
+			id: 'test-uuid-123',
+			email: 'test@test.com',
+			given_name: 'Test',
+			name: 'Test User',
+			phone: null,
+			username: 'test@test.com',
+		};
 		next();
 	},
 }));

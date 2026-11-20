@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../types/auth.js';
 import { generateWishlist } from '../services/wishlistGenerator.service.js';
 import { addOrg } from '../services/addOrgWishlist.js';
 import { addRelationshipUserOrg } from '../services/addRelationshipUserOrg.js';
@@ -21,9 +22,12 @@ async function getUserNumericId(authUuid: string): Promise<number> {
 	return data.id as number;
 }
 
-export const getAllWishlist = async (req: Request, res: Response) => {
+export const getAllWishlist = async (
+	req: AuthenticatedRequest,
+	res: Response
+) => {
 	try {
-		const authUuid = (req as any).user.id;
+		const authUuid = req.user!.id; // user is set by requireAuth
 		const numericId = await getUserNumericId(authUuid);
 
 		const relationships = await getOrgsByUser(numericId);
@@ -56,7 +60,10 @@ export const getAllWishlist = async (req: Request, res: Response) => {
 	}
 };
 
-export const addToWishlist = async (req: Request, res: Response) => {
+export const addToWishlist = async (
+	req: AuthenticatedRequest,
+	res: Response
+) => {
 	const {
 		name,
 		industry,
@@ -84,7 +91,7 @@ export const addToWishlist = async (req: Request, res: Response) => {
 	}
 
 	try {
-		const authUuid = (req as any).user.id;
+		const authUuid = req.user!.id; // user is set by requireAuth
 		const numericId = await getUserNumericId(authUuid);
 
 		const resolvedLogoUrl =
@@ -115,7 +122,10 @@ export const addToWishlist = async (req: Request, res: Response) => {
 	}
 };
 
-export const deleteFromWishlist = async (req: Request, res: Response) => {
+export const deleteFromWishlist = async (
+	req: AuthenticatedRequest,
+	res: Response
+) => {
 	const { name } = req.query;
 
 	if (!name) {
@@ -125,7 +135,7 @@ export const deleteFromWishlist = async (req: Request, res: Response) => {
 	}
 
 	try {
-		const authUuid = (req as any).user.id;
+		const authUuid = req.user!.id; // user is set by requireAuth
 		const numericId = await getUserNumericId(authUuid);
 
 		const { data: orgData, error: orgError } = await supabaseAdmin
@@ -197,7 +207,7 @@ const ALLOWED_COUNTRIES = new Set(['', 'United Kingdom']);
 const ALLOWED_SIZES = new Set(['', '1-50', '51-200', '201-500', '500+']);
 
 export const generateWishlistFromFilters = async (
-	req: Request,
+	req: AuthenticatedRequest,
 	res: Response
 ) => {
 	try {
@@ -231,7 +241,7 @@ export const generateWishlistFromFilters = async (
 			});
 		}
 
-		const authUuid = (req as any).user.id;
+		const authUuid = req.user!.id; // user is set by requireAuth
 		const numericId = await getUserNumericId(authUuid);
 
 		console.log('🤖 Generating wishlist with Claude AI...');
