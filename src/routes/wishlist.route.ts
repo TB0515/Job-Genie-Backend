@@ -1,7 +1,6 @@
 import express from 'express';
 
 import {
-	addToWishlist,
 	deleteFromWishlist,
 	getAllWishlist,
 	generateWishlistFromFilters,
@@ -11,7 +10,6 @@ import { generateLimiter } from '../middleware/rateLimits.js';
 const router = express.Router();
 
 router.get('/', getAllWishlist);
-router.post('/', addToWishlist);
 router.delete('/', deleteFromWishlist);
 router.post('/generate', generateLimiter, generateWishlistFromFilters);
 

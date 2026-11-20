@@ -181,34 +181,11 @@ describe('Wishlist API', () => {
 		expect(res.body.message).toBe('empty wishlist');
 	});
 
-	it('POST /api/wishlist should add a new company', async () => {
-		const newCompany = {
-			name: 'Test Co',
-			industry: 'Tech',
-			size: '1-50',
-			city: 'London',
-			country: 'UK',
-			description: 'A test company',
-			websiteUrl: 'https://testco.com',
-		};
-
-		const res = await request(app)
+	it('POST /api/wishlist no longer exists and returns 404', async () => {
+		await request(app)
 			.post('/api/wishlist')
-			.send(newCompany)
-			.expect(200);
-
-		expect(res.body.success).toBe(true);
-		expect(res.body.company.name).toBe('Test Co');
-	});
-
-	it('POST /api/wishlist should fail when required fields are missing', async () => {
-		const res = await request(app)
-			.post('/api/wishlist')
-			.send({ name: 'Incomplete Co' })
-			.expect(400);
-
-		expect(res.body.success).toBe(false);
-		expect(res.body.message).toBe('Missing required company fields');
+			.send({ name: 'Test Co' })
+			.expect(404);
 	});
 
 	it('DELETE /api/wishlist should return 404 when company not found', async () => {

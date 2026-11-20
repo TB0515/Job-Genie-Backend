@@ -6,7 +6,6 @@ import { addRelationshipUserOrg } from '../services/addRelationshipUserOrg.js';
 import { deleteRelationshipUserOrg } from '../services/deleteRelationshipUserOrg.js';
 import { getOrgsByUser } from '../services/getOrgsByUser.js';
 import { supabaseAdmin } from '../config/supabaseAdmin.js';
-import { logoFromWebsite } from '../utils/url.js';
 
 // Look up the numeric PK for a user by their Supabase auth UUID
 async function getUserNumericId(authUuid: string): Promise<number> {
@@ -54,71 +53,11 @@ export const getAllWishlist = async (
 			companies,
 		});
 	} catch (error) {
+		console.error('Error loading wishlist:', error);
 		return res.status(500).json({
 			success: false,
-			message: error instanceof Error ? error.message : 'Unknown error',
+			message: 'Failed to load wishlist',
 		});
-	}
-};
-
-export const addToWishlist = async (
-	req: AuthenticatedRequest,
-	res: Response
-) => {
-	const {
-		name,
-		industry,
-		size,
-		city,
-		country,
-		description,
-		logoUrl,
-		websiteUrl,
-	} = req.body;
-
-	if (
-		!name ||
-		!industry ||
-		!size ||
-		!city ||
-		!country ||
-		!description ||
-		!websiteUrl
-	) {
-		return res.status(400).json({
-			success: false,
-			message: 'Missing required company fields',
-		});
-	}
-
-	try {
-		const authUuid = req.user!.id;
-		const numericId = await getUserNumericId(authUuid);
-
-		const resolvedLogoUrl = logoUrl || logoFromWebsite(websiteUrl);
-
-		const orgData = await addOrg(
-			name,
-			city,
-			country,
-			industry,
-			description,
-			size,
-			resolvedLogoUrl
-		);
-		const orgId = orgData[0].id as number;
-
-		await addRelationshipUserOrg(numericId, [orgId], ['wishlisted']);
-
-		return res.status(200).json({
-			success: true,
-			message: 'Company added to wishlist',
-			company: orgData[0],
-		});
-	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Unknown error';
-		const status = message.includes('already exists') ? 409 : 500;
-		return res.status(status).json({ success: false, message });
 	}
 };
 
@@ -157,9 +96,10 @@ export const deleteFromWishlist = async (
 			deleted: { name },
 		});
 	} catch (error) {
+		console.error('Error removing company from wishlist:', error);
 		return res.status(500).json({
 			success: false,
-			message: error instanceof Error ? error.message : 'Unknown error',
+			message: 'Failed to remove company',
 		});
 	}
 };
@@ -295,7 +235,6 @@ export const generateWishlistFromFilters = async (
 		return res.status(500).json({
 			success: false,
 			message: 'Failed to generate wishlist with AI',
-			error: error instanceof Error ? error.message : 'Unknown error',
 		});
 	}
 };
