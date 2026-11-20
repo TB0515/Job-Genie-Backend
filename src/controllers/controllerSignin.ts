@@ -97,11 +97,35 @@ export const googleAuth = async (
 	}
 };
 
+interface SignUpRequestBody {
+	email?: string;
+	password?: string;
+	name?: string;
+	phone?: string;
+}
+
+const isNonEmptyString = (value: unknown): value is string =>
+	typeof value === 'string' && value.trim() !== '';
+
 export const signUp = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const { email, password, name, phone } = req.body;
-		const firstName = name.split(' ')[0] || '';
-		const lastName = name.split(' ')[1] || '';
+		const { email, password, name, phone }: SignUpRequestBody = req.body ?? {};
+
+		if (
+			!isNonEmptyString(email) ||
+			!isNonEmptyString(password) ||
+			!isNonEmptyString(name)
+		) {
+			res.status(400).json({
+				success: false,
+				message: 'Name, email and password are required',
+			});
+			return;
+		}
+
+		const phoneNumber = typeof phone === 'string' ? phone : '';
+		const [firstName, ...otherNames] = name.trim().split(/\s+/);
+		const lastName = otherNames.join(' ');
 		const { data, error } = await supabase.auth.signUp({
 			email,
 			password,
@@ -109,7 +133,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 				data: {
 					first_name: firstName,
 					last_name: lastName,
-					phoneNumber: phone,
+					phoneNumber,
 				},
 			},
 		});
@@ -125,7 +149,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 						email,
 						first_name: firstName,
 						last_name: lastName,
-						phone: phone ?? '',
+						phone: phoneNumber,
 						username: email,
 					},
 					supabaseAdmin
@@ -134,7 +158,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 				console.warn('addUser failed during signup:', insertErr);
 			}
 		}
-		res.json({ success: true, user: data.user, session: data.session });
+		res.json({ success: true });
 	} catch (error) {
 		console.error('Sign-up failed:', error);
 		res.status(500).json({ success: false, message: 'Sign-up failed' });

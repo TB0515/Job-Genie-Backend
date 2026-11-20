@@ -111,6 +111,20 @@ describe('Auth API', () => {
 				.expect(200);
 
 			expect(res.body.success).toBe(true);
+			expect(res.body).not.toHaveProperty('session');
+			expect(res.body).not.toHaveProperty('user');
+		});
+
+		it('returns 400 without calling Supabase when name is missing', async () => {
+			mockSignUp.mockClear();
+
+			const res = await request(app)
+				.post('/auth/signup')
+				.send({ email: 'test@test.com', password: 'pass123' })
+				.expect(400);
+
+			expect(res.body.success).toBe(false);
+			expect(mockSignUp).not.toHaveBeenCalled();
 		});
 
 		it('returns 400 with success:false when Supabase returns error', async () => {
