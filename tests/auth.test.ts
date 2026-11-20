@@ -8,6 +8,9 @@ import app from '../src/app.js';
 const mockSignUp = vi.hoisted(() => vi.fn());
 const mockSignInWithPassword = vi.hoisted(() => vi.fn());
 const mockSignInWithIdToken = vi.hoisted(() => vi.fn());
+const mockVerifyIdToken = vi.hoisted(() =>
+	vi.fn().mockRejectedValue(new Error('Token verification failed'))
+);
 
 // Mock requireAuth to inject a fake user (for /auth/me)
 vi.mock('../src/middleware/requireAuth.js', () => ({
@@ -78,9 +81,7 @@ vi.mock('../src/config/supabaseAdmin.js', () => ({
 // Must use a class or regular function — arrow functions can't be used as constructors.
 vi.mock('google-auth-library', () => {
 	class MockOAuth2Client {
-		verifyIdToken = vi
-			.fn()
-			.mockRejectedValue(new Error('Token verification failed'));
+		verifyIdToken = mockVerifyIdToken;
 	}
 	return { OAuth2Client: MockOAuth2Client };
 });
@@ -110,6 +111,20 @@ describe('Auth API', () => {
 				.expect(200);
 
 			expect(res.body.success).toBe(true);
+			expect(res.body).not.toHaveProperty('session');
+			expect(res.body).not.toHaveProperty('user');
+		});
+
+		it('returns 400 without calling Supabase when name is missing', async () => {
+			mockSignUp.mockClear();
+
+			const res = await request(app)
+				.post('/auth/signup')
+				.send({ email: 'test@test.com', password: 'pass123' })
+				.expect(400);
+
+			expect(res.body.success).toBe(false);
+			expect(mockSignUp).not.toHaveBeenCalled();
 		});
 
 		it('returns 400 with success:false when Supabase returns error', async () => {
@@ -205,6 +220,33 @@ describe('Auth API', () => {
 				.expect(401);
 
 			expect(res.body.ok).toBe(false);
+		});
+
+		it('returns phone as null for a Google user without a phone', async () => {
+			vi.stubEnv('TEST_PHONE_NUMBER', '0000000000');
+			mockVerifyIdToken.mockResolvedValueOnce({
+				getPayload: () => ({
+					email: 'google@test.com',
+					given_name: 'Google',
+					family_name: 'User',
+					name: 'Google User',
+				}),
+			});
+			mockSignInWithIdToken.mockResolvedValueOnce({
+				data: {
+					session: { access_token: 'token' },
+					user: { id: 'google-uuid' },
+				},
+				error: null,
+			});
+
+			const res = await request(app)
+				.post('/auth/google')
+				.send({ token: 'good-token' })
+				.expect(200);
+
+			expect(res.body.phone).toBeNull();
+			vi.unstubAllEnvs();
 		});
 	});
 });
