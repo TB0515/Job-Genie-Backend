@@ -145,6 +145,26 @@ describe('Auth API', () => {
 
 			expect(res.body.success).toBe(false);
 		});
+
+		it('does not send a phone number to Supabase when phone is empty', async () => {
+			mockSignUp.mockResolvedValueOnce({
+				data: { user: { id: 'u2', email: 'nophone@test.com' }, session: null },
+				error: null,
+			});
+
+			await request(app)
+				.post('/auth/signup')
+				.send({
+					email: 'nophone@test.com',
+					password: 'pass123',
+					name: 'No Phone',
+				})
+				.expect(200);
+
+			expect(
+				mockSignUp.mock.calls.at(-1)?.[0].options.data.phoneNumber
+			).toBeUndefined();
+		});
 	});
 
 	describe('POST /auth/login', () => {
